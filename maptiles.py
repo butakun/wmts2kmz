@@ -8,7 +8,7 @@ from PIL import Image
 def convert_png_to_jpg(filename_png):
 
     filename_jpg = filename_png.replace(".png", ".jpg")
-    Image.open(filename_png).save(filename_jpg, quality = 95)
+    Image.open(filename_png).convert("RGB").save(filename_jpg, quality = 95)
     return filename_jpg
 
 def fetch_tile_images(z, latlng_sw, latlng_ne, image_format, dirname):
