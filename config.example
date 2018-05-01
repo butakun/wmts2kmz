@@ -3,3 +3,4 @@ latlng_sw = [35.800239, 139.584983]
 latlng_ne = [35.812760, 139.600586]
 zoom_level = 17
 image_format = "jpg"
+multiple = 5

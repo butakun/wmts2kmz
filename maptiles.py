@@ -8,16 +8,27 @@ from PIL import Image
 def convert_png_to_jpg(filename_png):
 
     filename_jpg = filename_png.replace(".png", ".jpg")
-    Image.open(filename_png).convert("RGB").save(filename_jpg, quality = 95)
+    Image.open(filename_png).convert("RGB").save(filename_jpg, quality = 75)
     return filename_jpg
 
-def fetch_tile_images(z, latlng_sw, latlng_ne, image_format, dirname):
-
-    #os.removedirs(dirname)
-    os.makedirs(dirname)
+def get_corner_tiles(z, latlng_sw, latlng_ne, multiple = None):
 
     tile_sw = mercantile.tile(latlng_sw[1], latlng_sw[0], z)
     tile_ne = mercantile.tile(latlng_ne[1], latlng_ne[0], z)
+    if multiple is None:
+        return tile_sw, tile_ne
+
+    nx = tile_ne.x - tile_sw.x + 1
+    ny = tile_sw.y - tile_ne.y + 1
+
+    tile_ne = mercantile.Tile(tile_ne.x + multiple - nx % multiple, tile_ne.y, z)
+    tile_sw = mercantile.Tile(tile_sw.x, tile_sw.y + multiple - ny % multiple, z)
+    return tile_sw, tile_ne
+
+def fetch_tile_images(z, tile_sw, tile_ne, image_format, dirname):
+
+    #os.removedirs(dirname)
+    os.makedirs(dirname)
 
     print("tile_sw = ", tile_sw, ", tile_ne = ", tile_ne)
 
@@ -40,19 +51,63 @@ def fetch_tile_images(z, latlng_sw, latlng_ne, image_format, dirname):
 
     return tiles
 
+def merge_tile_images(dirname, tiles, multiple = 2):
+
+    z = tiles[0][1].z
+
+    x_min = min(tiles, key = lambda t: t[1].x)[1].x
+    y_min = min(tiles, key = lambda t: t[1].y)[1].y
+    x_max = max(tiles, key = lambda t: t[1].x)[1].x
+    y_max = max(tiles, key = lambda t: t[1].y)[1].y
+    print(x_min, x_max)
+
+    lx = x_max - x_min + 1
+    ly = y_max - y_min + 1
+    assert(lx % multiple == 0 and ly % multiple == 0)
+
+    tiles_dict = dict((t, f) for f, t in tiles)
+
+    tiles_merged = []
+    for x in range(x_min, x_max + 1, multiple):
+        for y in range(y_min, y_max + 1, multiple):
+            merged = Image.new("RGB", (256 * multiple, 256 * multiple))
+            print("---")
+            for i in range(multiple):
+                for j in range(multiple):
+                    tile = mercantile.Tile(x + i, y + j, z)
+                    image_filename = dirname + os.path.sep + tiles_dict[tile]
+                    print("  ", tile, image_filename)
+                    image = Image.open(image_filename)
+                    merged.paste(image, (256 * i, 256 * j))
+            merged_filename = dirname + os.path.sep + "{z}_{x}_{y}_{d}x{d}.jpg".format(x = x, y = y, z = z, d = multiple)
+            print("  -> ", merged_filename)
+            merged.save(merged_filename)
+            tiles_merged.append([
+                os.path.basename(merged_filename),
+                [mercantile.Tile(x, y, z), mercantile.Tile(x + multiple - 1, y + multiple - 1, z)]
+                ])
+
+    return tiles_merged
+
 def generate_kml(tiles):
     """ tiles = [(filename, mercantile.Tile), ...] """
 
     kml = simplekml.Kml()
 
-    for filename, tile in tiles:
-        bounds = mercantile.bounds(tile)
-        tileoverlay = kml.newgroundoverlay(name = "{z}_{x}_{y}".format(x = tile.x, y = tile.y, z = tile.z))
+    for filename, (tile_nw, tile_se) in tiles:
+        bounds_nw = mercantile.bounds(tile_nw)
+        bounds_se = mercantile.bounds(tile_se)
+        west = bounds_nw.west
+        east = bounds_se.east
+        south = bounds_se.south
+        north = bounds_nw.north
+        tileoverlay = kml.newgroundoverlay(name = "{z}_{x}_{y}".format(
+            x = tile_nw.x, y = tile_nw.y, z = tile_nw.z))
         tileoverlay.icon.href = filename
-        tileoverlay.latlonbox.west = bounds.west
-        tileoverlay.latlonbox.east = bounds.east
-        tileoverlay.latlonbox.south = bounds.south
-        tileoverlay.latlonbox.north = bounds.north
+        tileoverlay.latlonbox.west = west
+        tileoverlay.latlonbox.east = east
+        tileoverlay.latlonbox.south = south
+        tileoverlay.latlonbox.north = north
 
     return kml
 
@@ -63,10 +118,31 @@ def test():
     kml = generate_kml(tiles)
     kml.save("test.kml")
 
-def main(name, latlng_sw, latlng_ne, zoom_level, image_format):
+def main(name, latlng_sw, latlng_ne, zoom_level, multiple, image_format):
 
-    tiles = fetch_tile_images(zoom_level, latlng_sw, latlng_ne, image_format, name)
-    kml = generate_kml(tiles)
+    tile_sw, tile_ne = get_corner_tiles(zoom_level, latlng_sw, latlng_ne, multiple)
+
+    x_min, x_max = tile_sw.x, tile_ne.x
+    y_min, y_max = tile_ne.y, tile_sw.y
+    nx = x_max - x_min + 1
+    ny = y_max - y_min + 1
+    nx_merged = nx / multiple
+    ny_merged = ny / multiple
+    print("multiple = ", multiple)
+    print("nx, ny = ", nx, ny)
+    print("nx_merged, ny_merged = ", nx_merged, ny_merged)
+    print("x min max = ", x_min, x_max)
+    print("y min max = ", y_min, y_max)
+    print("there are ", nx * ny, " tiles at zoom level ", zoom_level)
+    print("there are ", nx_merged * ny_merged, " merged tiles")
+
+    if nx_merged * ny_merged > 100:
+        print("keep the number of merged tile images to at most 100, by increasing `multiple` parameter")
+        return
+
+    tiles = fetch_tile_images(zoom_level, tile_sw, tile_ne, image_format = "png", dirname = name)
+    merged_tiles = merge_tile_images(name, tiles, multiple)
+    kml = generate_kml(merged_tiles)
     kml.save(name + os.path.sep + "doc.kml")
 
 if __name__ == "__main__":
@@ -75,4 +151,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
     config = {}
     exec(open(args.config).read(), None, config)
-    main(config["name"], config["latlng_sw"], config["latlng_ne"], config["zoom_level"], config["image_format"])
+    main(config["name"], config["latlng_sw"], config["latlng_ne"], config["zoom_level"], config["multiple"], config["image_format"])
