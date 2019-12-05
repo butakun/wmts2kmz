@@ -1,12 +1,12 @@
 # gsimap2kmz
 
-A Python script to download raster map tiles via Web Map Tile Services and have them neatly packaged into kmz archives that can simply copied to Garmin GPS navigators such as eTrex 30.
+A Python script for downloading raster map tiles via Web Map Tile Services and have them neatly packaged into kmz archives that can then be copied to Garmin GPS navigators such as eTrex 30.
 
 ## WMTS Services
 So far the following WMTS services have been successfully used and maps deployed on my Garmin eTrex 30. Any WMTS service should work, as long as it serves EPS:900913 tiles.
-- [https://www.gsi.go.jp/](Geographical Information Authority of Japan)
-- [http://www.ign.fr/](Institut National de l'Informatique Géographique et Forestière)
-- [https://www.kartverket.no/](Kartverktet / Norwegian Mapping Authority)
+- [Geographical Information Authority of Japan](https://www.gsi.go.jp/)
+- [Institut National de l'Informatique Géographique et Forestière](http://www.ign.fr/)
+- [Kartverktet / Norwegian Mapping Authority](https://www.kartverket.no/)
 
 ## Usage
 ```
@@ -21,3 +21,5 @@ python ./maptiles.py --config=foobar.config
 * kml file must be named `doc.kml`
 * overlay files must be in the same directory as `doc.kml`
 
+## N.B.
+- KMZ files are not created automatically. Remove PNG files from the directory created and then zip it, with kmz as suffix.
