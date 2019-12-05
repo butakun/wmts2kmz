@@ -1,7 +1,0 @@
-url = 'https://wxs.ign.fr/choisirgeoportail/geoportail/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=GEOGRAPHICALGRIDSYSTEMS.MAPS&TILEMATRIXSET=PM&TILEMATRIX={z}&TILECOL={x}&TILEROW={y}&STYLE=normal&FORMAT=image/jpeg'
-name = 'LesContamines'
-latlng_sw = [45.816887, 6.719531]
-latlng_ne = [45.861498, 6.810245]
-zoom_level = 16
-image_format = 'jpg'
-multiple = 5
