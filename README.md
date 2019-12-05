@@ -1,4 +1,4 @@
-# gsimap2kmz
+# wmts2kmz
 
 A Python script for downloading raster map tiles via Web Map Tile Services and have them neatly packaged into kmz archives that can then be copied to Garmin GPS navigators such as eTrex 30.
 
