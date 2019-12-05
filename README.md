@@ -1,6 +1,8 @@
 # wmts2kmz
 
-A Python script for downloading raster map tiles via Web Map Tile Services and have them neatly packaged into kmz archives that can then be copied to Garmin GPS navigators such as eTrex 30.
+You have a Garmin eTrex capable of loading custom maps, yet you don't want to pay for custom maps or you are in a country for which you don't qualify for free map data? Then this script might be of help.
+
+This is a Python script for downloading raster map tiles via Web Map Tile Services and have them neatly packaged into kmz archives that can then be copied to Garmin GPS navigators such as eTrex 30.
 
 ## WMTS Services
 So far the following WMTS services have been successfully used and maps deployed on my Garmin eTrex 30. Any WMTS service should work, as long as it serves EPS:900913 tiles.
