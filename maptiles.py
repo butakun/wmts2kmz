@@ -2,8 +2,10 @@ import urllib.request
 import mercantile
 import simplekml
 import os
+import pathlib
 import argparse
 from PIL import Image
+import zipfile
 
 
 def convert_png_to_jpg(filename_png):
@@ -164,7 +166,15 @@ def main(name, latlng_sw, latlng_ne, zoom_level, multiple, image_format, url):
     )
     merged_tiles = merge_tile_images(name, tiles, multiple)
     kml = generate_kml(merged_tiles)
-    kml.save(name + os.path.sep + "doc.kml")
+    kml_file_name = pathlib.Path(name) / "doc.kml"
+    kml.save(kml_file_name)
+
+    kmz = zipfile.ZipFile(f"{name}.kmz", "w")
+    kmz.write(kml_file_name)
+    for filename, _ in merged_tiles:
+        img_path = pathlib.Path(name) / filename
+        kmz.write(img_path)
+    kmz.close()
 
 
 if __name__ == "__main__":
