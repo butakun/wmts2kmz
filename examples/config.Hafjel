@@ -1,4 +1,4 @@
-url = 'https://opencache.statkart.no/gatekeeper/gk/gk.open_wmts?SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetTile&LAYER=toporaster3&STYLE=default&FORMAT=image/png&TILEMATRIXSET=EPSG:900913&TILEMATRIX=EPSG:900913:{z}&TILEROW={y}&TILECOL={x}'
+url = 'https://opencache.statkart.no/gatekeeper/gk/gk.open_wmts?SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetTile&LAYER=toporaster4&STYLE=default&FORMAT=image/png&TILEMATRIXSET=EPSG:900913&TILEMATRIX=EPSG:900913:{z}&TILEROW={y}&TILECOL={x}'
 name = 'Hafjel'
 latlng_sw = [61.2206, 10.4314]
 latlng_ne = [61.2578, 10.52]

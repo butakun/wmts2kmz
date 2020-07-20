@@ -6,6 +6,7 @@ import pathlib
 import argparse
 from PIL import Image
 import zipfile
+import time
 
 
 def convert_png_to_jpg(filename_png):
@@ -30,7 +31,7 @@ def get_corner_tiles(z, latlng_sw, latlng_ne, multiple=None):
     return tile_sw, tile_ne
 
 
-def fetch_tile_images(url_template, z, tile_sw, tile_ne, image_format, dirname):
+def fetch_tile_images(url_template, z, tile_sw, tile_ne, image_format, dirname, sleep):
 
     # os.removedirs(dirname)
     os.makedirs(dirname)
@@ -45,7 +46,19 @@ def fetch_tile_images(url_template, z, tile_sw, tile_ne, image_format, dirname):
             saveto_png = dirname + os.path.sep + filename
             print("URL = ", url)
             print("saving to = ", saveto_png)
-            urllib.request.urlretrieve(url, saveto_png)
+            success = False
+            while not success:
+                try:
+                    urllib.request.urlretrieve(url, saveto_png)
+                    success = True
+                except urllib.error.HTTPError as e:
+                    print(f"{e.code}: {e.reason}")
+                    if e.code == 500:
+                        print(f"retrying after {sleep} second(s).")
+                        time.sleep(sleep)
+                    else:
+                        raise
+
             if image_format == "jpg":
                 image_filename = os.path.basename(convert_png_to_jpg(saveto_png))
             elif image_format == "png":
@@ -137,7 +150,7 @@ def test():
     kml.save("test.kml")
 
 
-def main(name, latlng_sw, latlng_ne, zoom_level, multiple, image_format, url):
+def main(name, latlng_sw, latlng_ne, zoom_level, multiple, image_format, url, sleep=0):
 
     tile_sw, tile_ne = get_corner_tiles(zoom_level, latlng_sw, latlng_ne, multiple)
 
@@ -162,7 +175,8 @@ def main(name, latlng_sw, latlng_ne, zoom_level, multiple, image_format, url):
         return
 
     tiles = fetch_tile_images(
-        url, zoom_level, tile_sw, tile_ne, image_format="png", dirname=name
+        url, zoom_level, tile_sw, tile_ne, image_format="png", dirname=name,
+        sleep=sleep
     )
     merged_tiles = merge_tile_images(name, tiles, multiple)
     kml = generate_kml(merged_tiles)
@@ -180,6 +194,7 @@ def main(name, latlng_sw, latlng_ne, zoom_level, multiple, image_format, url):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("--config")
     parser.add_argument("--config", help="config file")
+    parser.add_argument("--sleep", type=float, default=1,  help="sleep (in sec) between tile fetch")
     args = parser.parse_args()
     config = {}
     exec(open(args.config).read(), None, config)
@@ -191,4 +206,5 @@ if __name__ == "__main__":
         config["multiple"],
         config["image_format"],
         config["url"],
+        args.sleep
     )

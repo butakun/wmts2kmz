@@ -1,0 +1,7 @@
+url = 'https://opencache.statkart.no/gatekeeper/gk/gk.open_wmts?SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetTile&LAYER=topo4&STYLE=default&FORMAT=image/png&TILEMATRIXSET=EPSG:900913&TILEMATRIX=EPSG:900913:{z}&TILEROW={y}&TILECOL={x}'
+name = 'Norefjell'
+latlng_sw = [60.19294, 9.07309]
+latlng_ne = [60.45614, 9.55365]
+zoom_level = 14
+image_format = 'jpg'
+multiple = 5

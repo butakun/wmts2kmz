@@ -9,6 +9,8 @@ So far the following WMTS services have been successfully used and maps deployed
 - [Geographical Information Authority of Japan](https://www.gsi.go.jp/)
 - [Institut National de l'Informatique Géographique et Forestière](http://www.ign.fr/)
 - [Kartverktet / Norwegian Mapping Authority](https://www.kartverket.no/)
+- [Kortforsyningen.dk]()
+  - [GetCapabilities](https://services.kortforsyningen.dk/service?request=GetCapabilities&version=1.1.1&servicename=topo25&service=WMS)
 
 ## Usage
 ```
